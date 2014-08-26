@@ -5,6 +5,21 @@ To see discussion around these API changes, please refer to the
 [changelog](/CHANGELOG.md) and git log the commits to find the issues
 they refer to.
 
+0.5.x -> 0.6.x
+--------------
+
+Links should now pass their params in the `params` property, though the
+old behavior will still work, you should update your code soon because
+it will be removed by `v1.0`
+
+```js
+// 0.5.x
+<Link to="user" userId="123"/>
+
+// 0.6.x
+<Link to="user" params={{userId: "123"}}/>
+```
+
 0.4.x -> 0.5.x
 --------------
 

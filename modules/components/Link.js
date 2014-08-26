@@ -4,6 +4,7 @@ var withoutProperties = require('../helpers/withoutProperties');
 var transitionTo = require('../helpers/transitionTo');
 var hasOwnProperty = require('../helpers/hasOwnProperty');
 var makeHref = require('../helpers/makeHref');
+var warning = require('react/lib/warning');
 
 function isLeftClickEvent(event) {
   return event.button === 0;
@@ -14,7 +15,7 @@ function isModifiedEvent(event) {
 }
 
 /**
- * A map of <Link> component props that are reserved for use by the
+ * DEPRECATED: A map of <Link> component props that are reserved for use by the
  * router and/or React. All other props are used as params that are
  * interpolated into the link's path.
  */
@@ -38,12 +39,12 @@ var RESERVED_PROPS = {
  *
  * You could use the following component to link to that route:
  *
- *   <Link to="showPost" postId="123"/>
+ *   <Link to="showPost" params={{postId: "123"}} />
  *
  * In addition to params, links may pass along query string parameters
  * using the `query` prop.
  *
- *   <Link to="showPost" postId="123" query={{show:true}}/>
+ *   <Link to="showPost" params={{postId: "123"}} query={{show:true}}/>
  */
 var Link = React.createClass({
 
@@ -53,7 +54,13 @@ var Link = React.createClass({
 
   statics: {
 
+    // TODO: Deprecate passing props as params in v1.0
     getUnreservedProps: function (props) {
+      warning(
+        false,
+        'Passing props for params on <Link>s is deprecated, '+
+        'please use the `params` property.'
+      );
       return withoutProperties(props, RESERVED_PROPS);
     }
 
@@ -62,6 +69,7 @@ var Link = React.createClass({
   propTypes: {
     to: React.PropTypes.string.isRequired,
     activeClassName: React.PropTypes.string.isRequired,
+    params: React.PropTypes.object,
     query: React.PropTypes.object,
     onClick: React.PropTypes.func
   },
@@ -81,8 +89,9 @@ var Link = React.createClass({
   /**
    * Returns a hash of URL parameters to use in this <Link>'s path.
    */
-  getParams: function () {
-    return Link.getUnreservedProps(this.props);
+  getParams: function (props) {
+    props = props || this.props;
+    return props.params || Link.getUnreservedProps(this.props);
   },
 
   /**
@@ -106,7 +115,7 @@ var Link = React.createClass({
   },
 
   componentWillReceiveProps: function (nextProps) {
-    var params = Link.getUnreservedProps(nextProps);
+    var params = this.getParams(nextProps);
 
     this.setState({
       isActive: Link.isActive(nextProps.to, params, nextProps.query)
